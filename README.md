@@ -11,6 +11,7 @@ The project theme is to design an integrated data mart for the traffic accidents
    d.
    
 3. Project Phases
+
 Phase | Content
 ------------ | -------------
 Phase_1 | Confirm business requirements, data mart design
