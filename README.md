@@ -1,9 +1,8 @@
 # Ottawa-Traffic-Accident-Data-Modelling-and-Analytics
 This project is an end-to-end data science and analytics project which includes data mart design, data collecting, data cleaning, data modelling, data visualization.
 
-Tools | Python, Tableau
+Tools | Python(Pandas, Numpy, Matplotlib, Seaborn, scikit learn...), Tableau, PostgreSQL,Jupyter Notebook
 ------------ | -------------
-
 
 1. Project Theme
 
