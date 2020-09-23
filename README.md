@@ -27,3 +27,5 @@ Phase_1 | Confirm business requirements, data mart design
 Phase_2 | Extract, Transform, Load data, OLAP testing
 Phase_3 | Construct Business Intelligence Dashboard
 Phase_4 | Build Machine learning model
+
+
