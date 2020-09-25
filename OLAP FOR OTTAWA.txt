@@ -1,0 +1,167 @@
+25 SQL QUERIES IN TOTAL
+1-5 : DRILL DOWN AND ROLL UP
+6-17: SLICE AND DICE
+18-25:TOP N AND BOTTOM M
+
+--1.Determine the total numver of fatalities in Ottawa during the four years--
+SELECT h.year, COUNT(f.Is_Fatal) as total_number_of_fatal
+FROM fact as f, hour_dim as h
+WHERE (h.year=2014 OR h.year=2015 OR h.year=2016 OR h.year=2017) AND f.Is_Fatal='Y' 
+AND f.hour_key=h.hour_key
+GROUP BY ROLLUP(h.year)
+
+--2.Determine the total number of fatalities in Ottawa during 2015--
+SELECT COUNT(f.is_fatal) as fatal_number_2015
+FROM fact as f, hour_dim as h
+WHERE h.year='2015' AND f.is_fatal='Y' AND f.hour_key=h.hour_key
+
+--3.Determine the total number of fatalities in Ottawa during 2017 DEC
+SELECT COUNT(f.is_fatal) as total_fatal_2017_DEC
+FROM hour_dim as h, fact as f
+WHERE h.hour_key=f.hour_key AND h.year='2017' AND f.is_fatal='Y' AND h.month='December'
+--4. Determine the total number of accidents where weather temperature less than 0 during 2016--
+SELECT COUNT(f.accident_key) as total_fatal_2016_tep_LESS_Than_Zero
+FROM hour_dim as h, fact as f, weather_dim as w
+WHERE h.hour_key=f.hour_key AND w.weather_key=f.weather_key AND h.year='2016' AND (w.temp_c<0)
+--5.Determine the total number of fatalities during holiday in ther year 2015
+SELECT COUNT(f.is_fatal) as total_fatal_2015_hol
+FROM hour_dim as h, fact as f
+WHERE h.hour_key=f.hour_key AND h.year='2015' AND holiday='yes'
+--6. Compare the total number of accidents of each holiday in the year 2014
+SELECT h.holiday_name, h.year, COUNT(f.accident_key) as total_accident
+FROM hour_dim as h, fact as f
+WHERE h.hour_key=f.hour_key AND NOT (h.holiday_name=' ') AND h.year='2014'
+GROUP BY h.holiday_name, h.year
+ORDER BY total_accident DESC
+--7.Compare the number of accidents on Mondays, versus the number of accidents on Fridays--
+SELECT COUNT(f.Accident_key) as count, h.week_name
+FROM fact as f, hour_dim as h
+WHERE f.hour_key=h.hour_key AND (h.week_name='Monday' OR h.week_name='Friday')
+GROUP BY h.week_name
+--8.For instance, compare the number of fatal accidents on Mondays, versus the number of fatal accidents on Fridays.
+SELECT h.week_name, COUNT(f.is_fatal) as total_fatal
+FROM hour_dim as h, fact as f
+WHERE h.hour_key=f.hour_key AND (h.week_name='Monday' OR h.week_name='Friday') AND f.is_fatal='Y'
+GROUP BY h.week_name
+--9.Compare the number of accidents on each event of the four years
+SELECT COUNT(f.accident_key) as count, e.event_name
+FROM fact as f, event_dim as e
+WHERE f.event_key=e.event_key AND NOT e.event_name='No Event'
+GROUP BY e.event_name
+ORDER BY count DESC
+--10.For instance, contrast the number of accidents at intersections versus those that do not occur at intersections.
+SELECT f.is_intersection, COUNT(f.is_intersection) as total_number
+FROM fact as f
+GROUP BY f.is_intersection
+--11.Compare the total number of accidents which occured at intersection during each event.
+SELECT COUNT(f.is_intersection) as count, e.event_name
+FROM fact as f, event_dim as e
+WHERE f.event_key=e.event_key AND f.is_intersection='Y' AND NOT e.event_name='No Event'
+GROUP BY e.event_name
+ORDER BY count DESC
+--12.For instance, contrast the number of fatal accidents at intersections versus those that do not occur at intersections
+SELECT f.is_intersection ,COUNT(f.is_intersection) as total_number
+FROM fact as f
+WHERE f.is_fatal='Y'
+GROUP BY f.is_intersection, f.is_fatal
+--13.For instance, contrast the number of accidents in KANATA, during 2017, with the number of fatalities in BRITANNIA, during 2014.
+SELECT l.neighborhood,h.year,COUNT(f.is_fatal) as total_fatal
+FROM fact as f, location_dim as l, hour_dim as h
+WHERE f.location_key=l.location_key AND f.hour_key=h.hour_key AND h.year='2014' AND l.neighborhood='OTTAWA BRITANNIA'
+GROUP BY l.neighborhood, h.year
+UNION
+SELECT l.neighborhood,h.year,COUNT(f.is_fatal) as total_fatal
+FROM fact as f, location_dim as l, hour_dim as h
+WHERE f.location_key=l.location_key AND f.hour_key=h.hour_key AND h.year='2017' AND l.neighborhood='OTTAWA KANATA'
+GROUP BY l.neighborhood, h.year
+--14.For instance, contrast the number of accidents in KANATA on Mondays, with the number of fatalities in KANATA on Fridays.
+SELECT l.neighborhood,h.week_name,COUNT(f.is_fatal) as total_fatal
+FROM fact as f, location_dim as l, hour_dim as h
+WHERE f.location_key=l.location_key AND f.hour_key=h.hour_key AND l.neighborhood='OTTAWA KANATA' AND (h.week_name='Monday' OR h.week_name='Friday')
+GROUP BY l.neighborhood, h.week_name
+
+--15.determine the interplay between road surface and the number of accidents.
+SELECT COUNT(f.accident_key) as sum, a.road_surface
+FROM fact as f, accident_dim as a
+WHERE f.accident_key=a.accident_key
+GROUP BY a.road_surface
+ORDER BY sum DESC
+
+--16.For instance, determine the interplay between traffic control, impact types and frequencies of accidents.
+SELECT COUNT(f.accident_key) as count, a.traffic_control, a.impact_type
+FROM fact as f, accident_dim as a
+WHERE f.accident_key=a.accident_key AND NOT a.traffic_control=' '
+GROUP BY (a.traffic_control, a.impact_type)
+ORDER BY count DESC
+
+--17.For instance, contrast the number of accidents at each weather environment during event in 'Christmas Lights'
+SELECT a.environment, e.event_name, COUNT(f.accident_key) as count
+FROM event_dim as e, fact as f, accident_dim as a
+WHERE a.accident_key=f.accident_key AND e.event_key=f.event_key AND e.event_name='Christmas Lights'
+GROUP BY a.environment, e.event_name
+ORDER BY count DESC
+
+--18.For instance, determine the intersections with the most accidents over the four years
+SELECT l.street_name, COUNT(f.accident_key) as count
+FROM location_dim as l, fact as f
+WHERE l.location_key=f.location_key AND f.is_intersection='Y'
+GROUP BY l.street_name
+ORDER BY count DESC
+LIMIT 1 
+--19.Determine the visibility with The top 3 accidents happened at intersection during four years
+SELECT a.visibility, COUNT(f.accident_key) as count
+FROM accident_dim as a, fact as f
+WHERE f.accident_key=a.accident_key AND f.is_intersection='Y'
+GROUP BY a.visibility
+ORDER BY count DESC
+LIMIT 3
+
+--20. The most kind of visibility with the intersection which have the most accidents during 4 years(The street_name showed in 18)
+SELECT a.visibility, l.street_name, COUNT(f.accident_key) as count
+FROM accident_dim as a, fact as f, location_dim as l
+WHERE f.accident_key=a.accident_key AND f.is_intersection='Y' AND f.location_key=l. location_key 
+AND l.street_name LIKE 'ST%VD'
+GROUP BY a.visibility, l.street_name
+ORDER BY count DESC
+LIMIT 1
+
+--21. The number of accidents with the least 3 holiday during 2017
+SELECT h.holiday_name, h.year, COUNT(f.accident_key) as total_accident
+FROM hour_dim as h, fact as f
+WHERE h.hour_key=f.hour_key AND NOT (h.holiday_name=' ') AND h.year='2017'
+GROUP BY h.holiday_name, h.year
+ORDER BY total_accident 
+LIMIT 3
+
+--22. The number of accidents with the least 3 kinds of weather condition during 4 years 
+SELECT w.weather, COUNT(f.accident_key) as count
+FROM weather_dim as w, fact as f
+WHERE f.weather_key=w.weather_key AND NOT w.weather='unknown'
+GROUP BY w.weather
+ORDER BY count
+LIMIT 3
+
+--23.The number of fatal accidents with the top 3 months in the year 2016
+SELECT h.month, count(f.is_fatal)
+FROM fact as f, hour_dim as h
+WHERE f.hour_key=h.hour_key AND h.year='2016'AND f.is_fatal='Y'
+GROUP BY h.month
+ORDER BY count DESC
+LIMIT 3
+
+--24.The number of accidents with the top 3 impact_type and visibility during weekend in the four years
+SELECT a.impact_type, a.visibility, COUNT(f.is_fatal) AS total_fatal
+FROM fact as f, accident_dim as a, hour_dim as h
+WHERE f.accident_key=a.accident_key AND f.hour_key=h.hour_key AND h.weekend='yes'
+GROUP BY a.impact_type, a.visibility
+ORDER BY total_fatal desc
+LIMIT 3
+
+--25.In the year 2014, which month has the least fatal accidents during an event?
+SELECT h.month,e.event_name,COUNT(f.is_fatal) AS total_fatal
+FROM fact as f, event_dim as e, hour_dim as h
+WHERE f.event_key=e.event_key AND f.hour_key=h.hour_key AND f.is_fatal='Y' AND h.year='2014' AND NOT e.event_name='No Event'
+GROUP BY e.event_name,h.month
+ORDER BY total_fatal 
+LIMIT 1
+
