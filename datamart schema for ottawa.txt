@@ -1,0 +1,100 @@
+
+--accident_dim table--
+CREATE TABLE accident_dim(
+  accident_key INT PRIMARY KEY,
+  date_time DATE,
+  environment TEXT,
+  impact_type TEXT,
+  visibility TEXT,
+  road_surface TEXT,
+  traffic_control TEXT, 
+  accident_date DATE,
+  accident_time TIME,
+);
+
+--weather_dim table--
+CREATE TABLE weather_dim(
+  date_time TEXT,
+  temp_c FLOAT,
+  dew_point_c FLOAT,
+  rel_hum FLOAT,
+  wind_dir FLOAT,
+  wind_spd_km_h FLOAT,
+  visibility_km FLOAT,
+  stn_press_kpa FLOAT,
+  hmdx FLOAT,
+  wind_chill FLOAT,
+  weather TEXT,
+  station_name TEXT,
+  latitude FLOAT,
+  longitude FLOAT,
+  province TEXT,
+  weather_key INT PRIMARY KEY,
+  year INT,
+  month INT,
+  day INT,
+  time TIME,
+  date DATE
+);
+
+--location_dim table--
+CREATE TABLE location_dim(
+  street_name TEXT,
+  longitude FLOAT,
+  latitude FLOAT,
+  elevation_m FLOAT,
+  province TEXT,
+  location_key INT PRIMARY KEY,
+  collision_location TEXT,
+  
+);
+
+--EVENT DIM(Optional table)--
+CREATE TABLE event_dim(
+  c_date DATE,
+  event_key INT PRIMARY KEY,
+  event_name TEXT,
+  event_start_date DATE,
+  event_start_year INT,
+  event_start_month INT,
+  event_start_day INT,
+  event_end_date DATE,
+  event_end_month INT,
+  event_end_day INT
+);
+
+--fact table--
+CREATE TABLE fact(
+  hour_key INT references hour_dim(hour_key),
+  accident_key INT references accident_dim(accident_key),
+  weather_key INT references weather_dim(weather_key),
+  event_key INT references event_dim(event_key),
+  location_key INT references location_dim(location_key),
+  is_intersection TEXT,
+  is_fatal TEXT
+);
+
+--hour_dim table(date format:YYYY-M-D, according to weather station raw data)--
+CREATE TABLE hour_dim(
+  Date_Time date, 
+  hour_key INT,
+  Date DATE,
+  Time TIME,
+  Year INT,
+  Month VARCHAR(30),
+  Day INT,
+  Hour INT,
+  Week_name VARCHAR(30),
+  Day_in_month INT,
+  Month_number INT,
+  Week_number INT,
+  Day_of_year INT,
+  Day_of_week INT,
+  Quarter INT,
+  Weekend VARCHAR(10),
+  Holiday VARCHAR(10),
+  Holiday_Name VARCHAR(100)
+);
+
+
+
