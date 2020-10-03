@@ -20,7 +20,7 @@ The project theme is to design an integrated data mart for the traffic accidents
    
    e. Develop multiple business intelligence dashboard on Tableau to support further analysis
    
-   f. Build Mahcine learning model to classify the fatal/non-fatal accident 
+   f. Association Analysis 
    
 3. Project Phases
 
@@ -29,6 +29,6 @@ Phase | Content
 Phase_1 | Confirm business requirements, data mart design
 Phase_2 | Extract, Transform, Load data, OLAP testing
 Phase_3 | Construct Business Intelligence Dashboard
-Phase_4 | Build Machine learning model, Data Mining
+Phase_4 | Data Mining
 
 
